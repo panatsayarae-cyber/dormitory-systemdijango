@@ -1,116 +1,51 @@
-from django.contrib import admin
-from django.urls import path
-from django.template.response import TemplateResponse
-from .models import Room, Tenant, Contract, Bill, Maintenance
-from django import forms
-from django.utils.html import format_html
-from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Room, Bill
 
 
-# ================== 🔥 ฟอร์มเลือกเดือน ==================
-class BillForm(forms.ModelForm):
-    MONTH_CHOICES = [(i, f"เดือน {i}") for i in range(1, 13)]
-    month = forms.ChoiceField(choices=MONTH_CHOICES)
-
-    class Meta:
-        model = Bill
-        fields = '__all__'
+# ================== 🔥 หน้าแรก ==================
+def home(request):
+    return render(request, 'home.html')
 
 
-# ================== 🔥 Rooms เป็นผัง ==================
-class RoomAdmin(admin.ModelAdmin):
-    def changelist_view(self, request, extra_context=None):
-        rooms = Room.objects.all().order_by('room_number')
-
-        floors = {}
-        for room in rooms:
-            floor = room.room_number[0]
-            floors.setdefault(floor, []).append(room)
-
-        # ✅ ใช้ each_context เท่านั้น
-        context = self.admin_site.each_context(request)
-        context['floors'] = floors
-
-        return TemplateResponse(request, "admin/rooms.html", context)
+# ================== 🔐 Login ==================
+def login_view(request):
+    return render(request, 'login.html')
 
 
-# ================== 🔥 Bill Admin ==================
-class BillAdmin(admin.ModelAdmin):
-    form = BillForm
-    exclude = ('total', 'room_price', 'water_total', 'electric_total')
-    readonly_fields = ('year',)
-
-    def save_model(self, request, obj, form, change):
-        from datetime import datetime
-        obj.year = datetime.now().year
-        super().save_model(request, obj, form, change)
+# ================== 🔓 Logout ==================
+def logout_view(request):
+    return redirect('/')
 
 
-# ================== 🔥 Maintenance Admin ==================
-class MaintenanceAdmin(admin.ModelAdmin):
-    list_display = ('tenant', 'room', 'status', 'image_preview')
-    readonly_fields = ('image', 'image_preview')
-
-    def image_preview(self, obj):
-        if obj.image:
-            return format_html(
-                '<img src="{}" width="200" style="border-radius:10px;" />',
-                obj.image.url
-            )
-        return "ไม่มีรูป"
-
-    image_preview.short_description = 'รูปภาพ'
+# ================== 📊 Dashboard ==================
+def dashboard(request):
+    return render(request, 'dashboard.html')
 
 
-# ================== 🔥 Custom Admin ==================
-class CustomAdminSite(admin.AdminSite):
-    site_header = "Dormitory Admin"
-    site_title = "Dormitory Admin"
-    index_title = "ระบบจัดการหอพัก"
-
-    def logout(self, request, extra_context=None):
-        logout(request)
-        request.session.flush()
-        return redirect('/')
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('rooms-view/', self.admin_view(self.rooms_view)),
-        ]
-        return custom_urls + urls
-
-    # ✅ ห้อง
-    def rooms_view(self, request):
-        rooms = Room.objects.all().order_by('room_number')
-
-        floors = {}
-        for room in rooms:
-            floor = room.room_number[0]
-            floors.setdefault(floor, []).append(room)
-
-        context = self.each_context(request)
-        context['floors'] = floors
-
-        return TemplateResponse(request, "admin/rooms.html", context)
-
-    # ✅ FIX ตัวพังจริงอยู่ตรงนี้
-    def index(self, request, extra_context=None):
-        extra_context = extra_context or {}
-
-        extra_context['custom_links'] = [
-            {"name": "🏢 ผังห้อง", "url": "/admin/rooms-view/"}
-        ]
-
-        return super().index(request, extra_context=extra_context)
+# ================== 💸 Bills ==================
+def bills(request):
+    bills = Bill.objects.all().order_by('-id')
+    return render(request, 'bills.html', {
+        'bills': bills
+    })
 
 
-# ================== 🔥 ใช้ Custom Admin ==================
-admin_site = CustomAdminSite(name='custom_admin')
+# ================== 🔧 Repair ==================
+def repair(request):
+    return render(request, 'repair.html')
 
-admin_site.register(Room, RoomAdmin)
-admin_site.register(Tenant)
-admin_site.register(Contract)
-admin_site.register(Bill, BillAdmin)
-admin_site.register(Maintenance, MaintenanceAdmin)
+
+# ================== 🏢 Rooms ==================
+def rooms(request):
+    rooms = Room.objects.all().order_by('room_number')
+    return render(request, 'rooms.html', {
+        'rooms': rooms
+    })
+
+
+# ================== 🔍 Room Detail ==================
+def room_detail(request, room_id):
+    room = get_object_or_404(Room, id=room_id)
+    return render(request, 'rooms.html', {
+        'room': room
+    })
