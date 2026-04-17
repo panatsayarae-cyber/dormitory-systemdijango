@@ -3,8 +3,10 @@ from app import views
 from app.admin import admin_site
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
+    path('admin/logout/', LogoutView.as_view(next_page='/'), name='admin_logout'),
     path('', views.home),
     path('login/', views.login_view),
     path('logout/', views.logout_view),
