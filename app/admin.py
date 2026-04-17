@@ -28,7 +28,6 @@ class RoomAdmin(admin.ModelAdmin):
             floor = room.room_number[0]
             floors.setdefault(floor, []).append(room)
 
-        # ✅ ห้ามใช้ dict()
         context = self.admin_site.each_context(request)
         context['floors'] = floors
 
@@ -89,15 +88,13 @@ class CustomAdminSite(admin.AdminSite):
             floor = room.room_number[0]
             floors.setdefault(floor, []).append(room)
 
-        # ✅ FIX หลัก
         context = self.each_context(request)
         context['floors'] = floors
 
         return TemplateResponse(request, "admin/rooms.html", context)
 
     def index(self, request, extra_context=None):
-        if extra_context is None:
-            extra_context = {}
+        extra_context = extra_context or {}
 
         extra_context['custom_links'] = [
             {"name": "🏢 ผังห้อง", "url": "/admin/rooms-view/"}
