@@ -8,7 +8,6 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 
 
-# ================== 🔥 ฟอร์มเลือกเดือน ==================
 class BillForm(forms.ModelForm):
     MONTH_CHOICES = [(i, f"เดือน {i}") for i in range(1, 13)]
     month = forms.ChoiceField(choices=MONTH_CHOICES)
@@ -18,7 +17,6 @@ class BillForm(forms.ModelForm):
         fields = '__all__'
 
 
-# ================== 🔥 Rooms เป็นผัง ==================
 class RoomAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         rooms = Room.objects.all().order_by('room_number')
@@ -34,7 +32,6 @@ class RoomAdmin(admin.ModelAdmin):
         return TemplateResponse(request, "admin/rooms.html", context)
 
 
-# ================== 🔥 Bill Admin ==================
 class BillAdmin(admin.ModelAdmin):
     form = BillForm
     exclude = ('total', 'room_price', 'water_total', 'electric_total')
@@ -46,27 +43,18 @@ class BillAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-# ================== 🔥 Maintenance Admin ==================
 class MaintenanceAdmin(admin.ModelAdmin):
     list_display = ('tenant', 'room', 'status', 'image_preview')
     readonly_fields = ('image', 'image_preview')
 
     def image_preview(self, obj):
         if obj.image:
-            return format_html(
-                '<img src="{}" width="200" style="border-radius:10px;" />',
-                obj.image.url
-            )
+            return format_html('<img src="{}" width="200">', obj.image.url)
         return "ไม่มีรูป"
 
-    image_preview.short_description = 'รูปภาพ'
 
-
-# ================== 🔥 Custom Admin ==================
 class CustomAdminSite(admin.AdminSite):
     site_header = "Dormitory Admin"
-    site_title = "Dormitory Admin"
-    index_title = "ระบบจัดการหอพัก"
 
     def logout(self, request, extra_context=None):
         logout(request)
@@ -93,17 +81,7 @@ class CustomAdminSite(admin.AdminSite):
 
         return TemplateResponse(request, "admin/rooms.html", context)
 
-    def index(self, request, extra_context=None):
-        extra_context = extra_context or {}
 
-        extra_context['custom_links'] = [
-            {"name": "🏢 ผังห้อง", "url": "/admin/rooms-view/"}
-        ]
-
-        return super().index(request, extra_context=extra_context)
-
-
-# ================== 🔥 ใช้ Custom Admin ==================
 admin_site = CustomAdminSite(name='custom_admin')
 
 admin_site.register(Room, RoomAdmin)
