@@ -29,11 +29,9 @@ class RoomAdmin(admin.ModelAdmin):
             floor = room.room_number[0]
             floors.setdefault(floor, []).append(room)
 
-        # 🔥 ต้องมี each_context
-        context = dict(
-            self.admin_site.each_context(request),
-            floors=floors,
-        )
+        # ✅ FIX: ห้ามใช้ dict()
+        context = self.admin_site.each_context(request)
+        context['floors'] = floors
 
         return TemplateResponse(request, "admin/rooms.html", context)
 
@@ -84,7 +82,7 @@ class CustomAdminSite(admin.AdminSite):
         ]
         return custom_urls + urls
 
-    # ✅ แก้ indentation + context
+    # ✅ FIX: context ต้องไม่ใช้ dict()
     def rooms_view(self, request):
         rooms = Room.objects.all().order_by('room_number')
 
@@ -93,18 +91,20 @@ class CustomAdminSite(admin.AdminSite):
             floor = room.room_number[0]
             floors.setdefault(floor, []).append(room)
 
-        context = dict(
-            self.each_context(request),
-            floors=floors,
-        )
+        context = self.each_context(request)
+        context['floors'] = floors
 
         return TemplateResponse(request, "admin/rooms.html", context)
 
+    # ✅ FIX: indentation + context safe
     def index(self, request, extra_context=None):
-        extra_context = extra_context or {}
+        if extra_context is None:
+            extra_context = {}
+
         extra_context['custom_links'] = [
             {"name": "🏢 ผังห้อง", "url": "/admin/rooms-view/"}
         ]
+
         return super().index(request, extra_context=extra_context)
 
 
