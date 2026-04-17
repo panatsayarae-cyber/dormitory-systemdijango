@@ -37,7 +37,7 @@ def dashboard(request):
 
     tenant = Tenant.objects.get(id=tenant_id)
 
-    latest_bill = Bill.objects.filter(tenant=tenant).order_by('-id').first()
+    latest_bill = Bill.objects.filter(contract__tenant=tenant).order_by('-id').first()
 
     return render(request, 'dashboard.html', {
         'tenant': tenant,
