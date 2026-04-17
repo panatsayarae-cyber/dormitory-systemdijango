@@ -36,12 +36,14 @@ def dashboard(request):
         return redirect('/login/')
 
     tenant = Tenant.objects.get(id=tenant_id)
+    contract = tenant.contract_set.first()
 
-    latest_bill = Bill.objects.filter(contract__tenant=tenant).order_by('-id').first()
+    bill = Bill.objects.filter(contract=contract).order_by('-id').first()
 
     return render(request, 'dashboard.html', {
         'tenant': tenant,
-        'bill': latest_bill
+        'bill': bill,
+        'room': contract.room if contract else None
     })
 
 
@@ -52,10 +54,14 @@ def bills(request):
     if not tenant_id:
         return redirect('/login/')
 
-    bills = Bill.objects.filter(tenant_id=tenant_id).order_by('-id')
+    try:
+        tenant = Tenant.objects.get(id=tenant_id)
+        contract = tenant.contract_set.first()   # ดึงสัญญา
+        bills = Bill.objects.filter(contract=contract).order_by('-id')
+    except:
+        bills = []
 
     return render(request, 'bills.html', {'bills': bills})
-
 
 # ================== แจ้งซ่อม ==================
 def repair(request):
@@ -65,13 +71,14 @@ def repair(request):
         return redirect('/login/')
 
     tenant = Tenant.objects.get(id=tenant_id)
+    contract = tenant.contract_set.first()
 
     if request.method == "POST":
         detail = request.POST.get("detail")
 
         Maintenance.objects.create(
             tenant=tenant,
-            room=tenant.room,
+            room=contract.room,   # ✅ ใช้ผ่าน contract
             detail=detail,
             status="รอดำเนินการ"
         )
