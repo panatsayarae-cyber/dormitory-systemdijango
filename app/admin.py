@@ -27,23 +27,21 @@ class RoomAdmin(admin.ModelAdmin):
         floors = {}
         for room in rooms:
             floor = room.room_number[0]
+            floors.setdefault(floor, []).append(room)
 
-            if floor not in floors:
-                floors[floor] = []
+        # 🔥 ต้องมี each_context
+        context = dict(
+            self.admin_site.each_context(request),
+            floors=floors,
+        )
 
-            floors[floor].append(room)
-
-        return TemplateResponse(request, "admin/rooms.html", {
-            "floors": floors
-        })
+        return TemplateResponse(request, "admin/rooms.html", context)
 
 
 # ================== 🔥 Bill Admin ==================
 class BillAdmin(admin.ModelAdmin):
     form = BillForm
-
     exclude = ('total', 'room_price', 'water_total', 'electric_total')
-
     readonly_fields = ('year',)
 
     def save_model(self, request, obj, form, change):
@@ -52,13 +50,10 @@ class BillAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-# ================== 🔥 Maintenance Admin (แสดงรูป) ==================
-from django.utils.html import format_html
-
+# ================== 🔥 Maintenance Admin ==================
 class MaintenanceAdmin(admin.ModelAdmin):
     list_display = ('tenant', 'room', 'status', 'image_preview')
-
-    readonly_fields = ('image', 'image_preview')  # 🔥 ห้ามแก้
+    readonly_fields = ('image', 'image_preview')
 
     def image_preview(self, obj):
         if obj.image:
@@ -78,9 +73,9 @@ class CustomAdminSite(admin.AdminSite):
     index_title = "ระบบจัดการหอพัก"
 
     def logout(self, request, extra_context=None):
-        logout(request)               
-        request.session.flush()       
-        return redirect('/')   
+        logout(request)
+        request.session.flush()
+        return redirect('/')
 
     def get_urls(self):
         urls = super().get_urls()
@@ -89,21 +84,21 @@ class CustomAdminSite(admin.AdminSite):
         ]
         return custom_urls + urls
 
+    # ✅ แก้ indentation + context
     def rooms_view(self, request):
         rooms = Room.objects.all().order_by('room_number')
 
         floors = {}
         for room in rooms:
             floor = room.room_number[0]
+            floors.setdefault(floor, []).append(room)
 
-            if floor not in floors:
-                floors[floor] = []
+        context = dict(
+            self.each_context(request),
+            floors=floors,
+        )
 
-            floors[floor].append(room)
-
-        return TemplateResponse(request, "admin/rooms.html", {
-            "floors": floors
-        })
+        return TemplateResponse(request, "admin/rooms.html", context)
 
     def index(self, request, extra_context=None):
         extra_context = extra_context or {}
