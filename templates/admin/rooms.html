@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<style>
+.room-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    padding-top: 10px;
+    margin: 5px;
+    font-weight: bold;
+}
+
+.available {
+    background-color: #28a745;
+}
+
+.occupied {
+    background-color: #dc3545;
+}
+
+.floor-card {
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+</style>
+
+<h2>🏢 ผังห้องพัก</h2>
+
+{% for floor, room_list in floors.items %}
+<div class="floor-card">
+
+<h3>ชั้น {{ floor }}</h3>
+
+<div style="display:flex; flex-wrap:wrap;">
+{% for room in room_list %}
+<div class="room-box {% if room.status == 'ว่าง' %}available{% else %}occupied{% endif %}">
+    {{ room.room_number }}<br>
+    <small>{{ room.status }}</small>
+</div>
+{% endfor %}
+</div>
+
+</div>
+{% endfor %}
+
+{% endblock %}

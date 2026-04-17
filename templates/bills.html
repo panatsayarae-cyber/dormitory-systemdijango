@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>บิลของฉัน</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+    background: #f1f5f9;
+}
+
+/* HEADER */
+.header-box {
+    background: linear-gradient(135deg, #6366f1, #1e3a8a);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+/* CARD */
+.bill-card {
+    border-radius: 20px;
+    border: none;
+    transition: 0.2s;
+}
+
+.bill-card:hover {
+    transform: translateY(-5px);
+}
+
+/* TOTAL */
+.total {
+    font-size: 24px;
+    font-weight: bold;
+    color: #16a34a;
+}
+
+/* QR */
+.qr-box {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+/* SLIP */
+.slip-img {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+/* STATUS */
+.badge {
+    font-size: 13px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+<!-- HEADER -->
+<div class="header-box d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">📄 บิลของฉัน</h4>
+   <a href="/dashboard/" class="btn btn-light btn-sm">⬅ กลับ</a>
+</div>
+
+{% for bill in bills %}
+
+<div class="card bill-card shadow-sm mb-4">
+<div class="card-body">
+
+<!-- TOP -->
+<div class="d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">📅 เดือน {{ bill.month }}/{{ bill.year }}</h5>
+
+    {% if bill.slip %}
+        <span class="badge bg-success">✔️ จ่ายแล้ว</span>
+    {% else %}
+        <span class="badge bg-danger">❌ ยังไม่จ่าย</span>
+    {% endif %}
+</div>
+
+<hr>
+
+<!-- DETAIL -->
+<div class="row">
+
+<!-- LEFT -->
+<div class="col-md-6">
+
+<p>🏠 ค่าห้อง: <strong>{{ bill.room_price }} บาท</strong></p>
+
+<p>🚿 ค่าน้ำ:
+{{ bill.water_unit }} × {{ bill.water_unit_price }}
+= <strong>{{ bill.water_total }} บาท</strong>
+</p>
+
+<p>⚡ ค่าไฟ:
+{{ bill.electric_unit }} × {{ bill.electric_unit_price }}
+= <strong>{{ bill.electric_total }} บาท</strong>
+</p>
+
+<div class="total mt-3">
+💰 {{ bill.total }} บาท
+</div>
+
+</div>
+
+<!-- RIGHT -->
+<div class="col-md-6 text-end">
+
+<!-- upload -->
+{% if not bill.slip %}
+<form method="POST" action="/upload-slip/" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="bill_id" value="{{ bill.id }}">
+    <input type="file" name="slip" required class="form-control mb-2">
+    <button class="btn btn-success btn-sm w-100">📥 อัปโหลดสลิป</button>
+</form>
+{% endif %}
+
+<!-- PDF -->
+<a href="/bill-pdf/{{ bill.id }}/" class="btn btn-primary btn-sm w-100 mt-2">
+🧾 ดู PDF
+</a>
+
+</div>
+
+</div>
+
+<!-- QR -->
+<div class="qr-box text-center mt-4">
+    <p class="mb-2">📱 สแกนจ่ายเงิน</p>
+    <img src="/qr/{{ bill.id }}/" width="150">
+</div>
+
+<!-- SLIP -->
+{% if bill.slip %}
+<div class="mt-3 text-center">
+    <p>📄 สลิปของคุณ</p>
+    <img src="{{ bill.slip.url }}" width="220" class="slip-img">
+</div>
+{% endif %}
+
+</div>
+</div>
+
+{% empty %}
+<div class="alert alert-info text-center">
+    ยังไม่มีบิล
+</div>
+{% endfor %}
+
+</div>
+
+</body>
+</html>

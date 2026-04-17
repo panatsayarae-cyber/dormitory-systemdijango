@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>แจ้งซ่อม</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-4">
+
+<h3>🔧 แจ้งซ่อม</h3>
+ <a href="/dashboard/" class="btn btn-light btn-sm">⬅ กลับ</a>
+        ⬅️ ย้อนกลับ
+    </a>
+<div class="card mb-3">
+<div class="card-body">
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+
+<label>ห้อง</label>
+<input type="text" class="form-control mb-2" value="{{ room.room_number }}" readonly>
+
+<label>รายละเอียด</label>
+<textarea name="detail" class="form-control mb-3" required></textarea>
+
+<label>แนบรูป (ถ้ามี)</label>
+<input type="file" name="image" class="form-control mb-3">
+
+<button class="btn btn-warning w-100">ส่งแจ้งซ่อม</button>
+
+</form>
+
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<h5>📋 ประวัติ</h5>
+
+<table class="table table-bordered text-center align-middle">
+
+<thead class="table-light">
+<tr>
+<th>รายละเอียด</th>
+<th>รูป</th>
+<th>สถานะ</th>
+<th>วันที่</th>
+</tr>
+</thead>
+
+<tbody>
+{% for r in repairs %}
+<tr>
+
+<td>{{ r.detail }}</td>
+
+<td>
+    {% if r.image %}
+        <img src="{{ r.image.url }}" width="120" style="border-radius:10px;">
+    {% else %}
+        <span class="text-muted">ไม่มีรูป</span>
+    {% endif %}
+</td>
+
+<td>
+    {% if r.status == "รอดำเนินการ" %}
+        <span class="badge bg-warning text-dark">รอดำเนินการ</span>
+    {% elif r.status == "กำลังดำเนินการ" %}
+        <span class="badge bg-primary">กำลังดำเนินการ</span>
+    {% else %}
+        <span class="badge bg-success">เสร็จแล้ว</span>
+    {% endif %}
+</td>
+
+<td>{{ r.request_date|date:"d/m/Y H:i" }}</td>
+
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+asgiref==3.7.2
+charset-normalizer==3.4.7
+colorama==0.4.6
+Django==4.2.3
+gunicorn==25.3.0
+libscrc==1.8.1
+mysqlclient==2.2.8
+packaging==26.1
+pdfkit==1.0.0
+pillow==12.2.0
+psycopg2-binary==2.9.11
+qrcode==8.2
+reportlab==4.4.10
+sqlparse==0.4.4
+tzdata==2023.3
+whitenoise==6.12.0

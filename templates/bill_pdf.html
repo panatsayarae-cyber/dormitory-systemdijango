@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+    font-family: Arial;
+}
+</style>
+</head>
+<body>
+
+<h2>ใบเสร็จค่าเช่า</h2>
+
+<p>เดือน: {{ bill.month }}/{{ bill.year }}</p>
+
+<hr>
+
+<p>ค่าห้อง: {{ bill.room_price }} บาท</p>
+<p>ค่าน้ำ: {{ bill.water_total }} บาท</p>
+<p>ค่าไฟ: {{ bill.electric_total }} บาท</p>
+
+<hr>
+
+<h3>รวม: {{ bill.total }} บาท</h3>
+
+</body>
+</html>
