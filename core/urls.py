@@ -14,6 +14,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard),
     path('bills/', views.bills),
     path('repair/', views.repair),
+    path('upload-slip/', views.upload_slip),
 
     path('admin/', admin_site.urls),
 

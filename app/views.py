@@ -78,14 +78,32 @@ def repair(request):
 
         Maintenance.objects.create(
             tenant=tenant,
-            room=contract.room,   # ✅ ใช้ผ่าน contract
+            room=contract.room,
             detail=detail,
             status="รอดำเนินการ"
         )
 
-        return redirect('/dashboard/')
+        return redirect('/repair/')
 
-    return render(request, 'repair.html')
+    repairs = Maintenance.objects.filter(tenant=tenant).order_by('-id')
+
+    return render(request, 'repair.html', {
+        'room': contract.room,
+        'repairs': repairs
+    })
+
+def upload_slip(request):
+    if request.method == "POST":
+        bill_id = request.POST.get("bill_id")
+        slip = request.FILES.get("slip")
+
+        bill = Bill.objects.get(id=bill_id)
+
+        if slip:
+            bill.slip = slip
+            bill.save()
+
+        return redirect('/bills/')
 
 
 # ================== ห้อง ==================
