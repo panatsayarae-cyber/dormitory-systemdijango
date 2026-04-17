@@ -1,33 +1,34 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Room, Bill, Tenant, Maintenance, Contract
+from .models import Room, Bill, Tenant, Maintenance
 
 
+# ================== หน้าแรก ==================
 def home(request):
     return render(request, 'home.html')
 
 
-# ================= LOGIN =================
+# ================== LOGIN ==================
 def login_view(request):
-    if request.method == 'POST':
-        id_card = request.POST.get('id_card')
+    if request.method == "POST":
+        id_card = request.POST.get("id_card")
 
         try:
             tenant = Tenant.objects.get(id_card=id_card)
             request.session['tenant_id'] = tenant.id
             return redirect('/dashboard/')
         except Tenant.DoesNotExist:
-            return render(request, 'login.html', {'error': 'ไม่พบผู้ใช้งาน'})
+            return render(request, 'login.html', {'error': 'ไม่พบผู้ใช้'})
 
     return render(request, 'login.html')
 
 
-# ================= LOGOUT =================
+# ================== LOGOUT ==================
 def logout_view(request):
     request.session.flush()
     return redirect('/')
 
 
-# ================= DASHBOARD =================
+# ================== DASHBOARD ==================
 def dashboard(request):
     tenant_id = request.session.get('tenant_id')
 
@@ -36,36 +37,27 @@ def dashboard(request):
 
     tenant = Tenant.objects.get(id=tenant_id)
 
-    # ✅ ใช้ contract แทน
-    contract = Contract.objects.filter(tenant=tenant).first()
-
-    room = contract.room if contract else None
-
-    bill = Bill.objects.filter(contract__tenant=tenant).order_by('-id').first()
+    latest_bill = Bill.objects.filter(tenant=tenant).order_by('-id').first()
 
     return render(request, 'dashboard.html', {
         'tenant': tenant,
-        'room': room,
-        'bill': bill
+        'bill': latest_bill
     })
 
 
-# ================= BILLS =================
+# ================== ดูบิล ==================
 def bills(request):
     tenant_id = request.session.get('tenant_id')
 
     if not tenant_id:
         return redirect('/login/')
 
-    tenant = Tenant.objects.get(id=tenant_id)
-
-    # ✅ FIX ตรงนี้
-    bills = Bill.objects.filter(contract__tenant=tenant).order_by('-id')
+    bills = Bill.objects.filter(tenant_id=tenant_id).order_by('-id')
 
     return render(request, 'bills.html', {'bills': bills})
 
 
-# ================= REPAIR =================
+# ================== แจ้งซ่อม ==================
 def repair(request):
     tenant_id = request.session.get('tenant_id')
 
@@ -74,26 +66,27 @@ def repair(request):
 
     tenant = Tenant.objects.get(id=tenant_id)
 
-    contract = Contract.objects.filter(tenant=tenant).first()
-    room = contract.room if contract else None
-
-    if request.method == 'POST':
-        detail = request.POST.get('detail')
-        image = request.FILES.get('image')
+    if request.method == "POST":
+        detail = request.POST.get("detail")
 
         Maintenance.objects.create(
             tenant=tenant,
-            room=room,
+            room=tenant.room,
             detail=detail,
-            image=image,
-            status='รอดำเนินการ'
+            status="รอดำเนินการ"
         )
 
-        return redirect('/repair/')
+        return redirect('/dashboard/')
 
-    repairs = Maintenance.objects.filter(tenant=tenant).order_by('-id')
+    return render(request, 'repair.html')
 
-    return render(request, 'repair.html', {
-        'room': room,
-        'repairs': repairs
-    })
+
+# ================== ห้อง ==================
+def rooms(request):
+    rooms = Room.objects.all().order_by('room_number')
+    return render(request, 'rooms.html', {'rooms': rooms})
+
+
+def room_detail(request, room_id):
+    room = get_object_or_404(Room, id=room_id)
+    return render(request, 'rooms.html', {'room': room})
