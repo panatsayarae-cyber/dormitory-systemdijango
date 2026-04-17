@@ -11,7 +11,6 @@ from django.shortcuts import redirect
 # ================== 🔥 ฟอร์มเลือกเดือน ==================
 class BillForm(forms.ModelForm):
     MONTH_CHOICES = [(i, f"เดือน {i}") for i in range(1, 13)]
-
     month = forms.ChoiceField(choices=MONTH_CHOICES)
 
     class Meta:
@@ -29,7 +28,7 @@ class RoomAdmin(admin.ModelAdmin):
             floor = room.room_number[0]
             floors.setdefault(floor, []).append(room)
 
-        # ✅ FIX: ห้ามใช้ dict()
+        # ✅ ห้ามใช้ dict()
         context = self.admin_site.each_context(request)
         context['floors'] = floors
 
@@ -82,7 +81,6 @@ class CustomAdminSite(admin.AdminSite):
         ]
         return custom_urls + urls
 
-    # ✅ FIX: context ต้องไม่ใช้ dict()
     def rooms_view(self, request):
         rooms = Room.objects.all().order_by('room_number')
 
@@ -91,12 +89,12 @@ class CustomAdminSite(admin.AdminSite):
             floor = room.room_number[0]
             floors.setdefault(floor, []).append(room)
 
+        # ✅ FIX หลัก
         context = self.each_context(request)
         context['floors'] = floors
 
         return TemplateResponse(request, "admin/rooms.html", context)
 
-    # ✅ FIX: indentation + context safe
     def index(self, request, extra_context=None):
         if extra_context is None:
             extra_context = {}
