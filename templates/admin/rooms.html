@@ -38,10 +38,12 @@
 
 <div style="display:flex; flex-wrap:wrap;">
 {% for room in room_list %}
-<div class="room-box {% if room.status == 'ว่าง' %}available{% else %}occupied{% endif %}">
-    {{ room.room_number }}<br>
-    <small>{{ room.status }}</small>
-</div>
+<a href="{% url 'admin:app_room_change' room.id %}" style="text-decoration:none;">
+    <div class="room-box {% if room.status == 'ว่าง' %}available{% else %}occupied{% endif %}">
+        {{ room.room_number }}<br>
+        <small>{{ room.status }}</small>
+    </div>
+</a>
 {% endfor %}
 </div>
 
